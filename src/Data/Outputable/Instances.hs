@@ -12,8 +12,8 @@ import           Data.Monoid                    (All, Any, Dual, First, Last,
 import           Data.Outputable.Class
 import qualified Data.Semigroup                 as S (First, Last, Max, Min,
                                                       Option, WrappedMonoid)
-import           Data.Text                      (Text)
-import qualified Data.Text.Lazy                 as TL (Text)
+import           Data.Text                      (Text, unpack)
+import qualified Data.Text.Lazy                 as TL (Text, unpack)
 import           Data.Version                   (Version)
 import           Data.Void                      (Void)
 import           Data.Word                      (Word16, Word32, Word64, Word8)
@@ -50,8 +50,8 @@ instance Outputable Word8 where pprPrec = viaShow
 instance Outputable Word16 where pprPrec = viaShow
 instance Outputable Word32 where pprPrec = viaShow
 instance Outputable Word64 where pprPrec = viaShow
-instance Outputable TL.Text where pprPrec n x = doubleQuotes $ viaShow n x
-instance Outputable Text where pprPrec n x = doubleQuotes $ viaShow n x
+instance Outputable TL.Text where pprPrec n x = doubleQuotes $ text $ TL.unpack x
+instance Outputable Text where pprPrec n x = doubleQuotes $ text $ unpack x
 instance Outputable a => Outputable [a] where pprPrec _ = pprList
 
 instance Outputable Char where
@@ -90,6 +90,6 @@ instance Outputable a => Outputable (S.Min a)
 instance Outputable a => Outputable (Complex a)
 instance (Outputable a, Outputable b) => Outputable (Either a b)
 instance (Outputable a, Outputable b) => Outputable (a, b) where
-  ppr (a, b) = parens $ fsep $ punctuate comma [ppr a, ppr b]
+  pprPrec _ (a, b) = parens $ fsep $ punctuate comma [ppr a, ppr b]
 instance (Outputable a, Outputable b, Outputable c) => Outputable (a, b, c) where
-  ppr (a, b, c) = parens $ fsep $ punctuate comma [ppr a, ppr b, ppr c]
+  pprPrec _ (a, b, c) = parens $ fsep $ punctuate comma [ppr a, ppr b, ppr c]
