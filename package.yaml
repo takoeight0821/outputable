@@ -1,0 +1,39 @@
+name:                outputable
+version:             0.1.0.0
+github:              "takoeight0821/outputable"
+license:             BSD3
+author:              "Yuya Kono"
+maintainer:          "takohati0821@gmail.com"
+copyright:           "2018 Yuya Kono"
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/takoeight0821/outputable#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- prettyprinter
+- text
+
+library:
+  source-dirs: src
+
+tests:
+  outputable-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - outputable
