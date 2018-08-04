@@ -55,7 +55,7 @@ instance (GOutputable f, Constructor c) => GOutputable (M1 C c f) where
     case fixity of
       Prefix -> wrapParens boolParens $ fsep [text name,
                                               if t == Rec
-                                              then fsep [lbrace, gppr a t 11 boolParens, rbrace]
+                                              then braces $ gppr a t 11 boolParens
                                               else gppr a t 11 boolParens]
       Infix _ m -> wrapParens (d > m) $ gppr a t (m + 1) (d > m)
     where fixity = conFixity c
