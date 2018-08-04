@@ -31,7 +31,7 @@ viaPrettyNum n x
   | n /= 0 && x < 0 = parens $ pPrint x
   | otherwise = pPrint x
 
-viaShow _ x = pPrint $ show x
+viaShow _ x = text $ show x
 viaShowNum n x
   | n /= 0 && x < 0 = parens $ viaShow n x
   | otherwise = viaShow n x
@@ -55,8 +55,8 @@ instance Outputable Text where pprPrec n x = doubleQuotes $ viaShow n x
 instance Outputable a => Outputable [a] where pprPrec _ = pprList
 
 instance Outputable Char where
-  pprPrec _ x = quotes $ pPrint x
-  pprList xs = doubleQuotes $ pPrint xs
+  pprPrec _ x = quotes $ char x
+  pprList = pPrint
 
 instance Outputable Bool
 instance Outputable Ordering
@@ -90,6 +90,6 @@ instance Outputable a => Outputable (S.Min a)
 instance Outputable a => Outputable (Complex a)
 instance (Outputable a, Outputable b) => Outputable (Either a b)
 instance (Outputable a, Outputable b) => Outputable (a, b) where
-  ppr (a, b) = parens $ (ppr a <> ",") <+> ppr b
+  ppr (a, b) = parens $ fsep $ punctuate comma [ppr a, ppr b]
 instance (Outputable a, Outputable b, Outputable c) => Outputable (a, b, c) where
-  ppr (a, b, c) = parens $ (ppr a <> ",") <+> (ppr b <> ",") <+> ppr c
+  ppr (a, b, c) = parens $ fsep $ punctuate comma [ppr a, ppr b, ppr c]
