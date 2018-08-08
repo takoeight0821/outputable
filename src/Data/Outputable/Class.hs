@@ -1,13 +1,13 @@
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE DefaultSignatures #-}
-{-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE FlexibleContexts  #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE KindSignatures    #-}
+{-# LANGUAGE TypeOperators     #-}
 module Data.Outputable.Class (Outputable(..)) where
 
-import GHC.Generics
-import Data.Char
-import Text.PrettyPrint hiding ((<>))
+import           Data.Char
+import           GHC.Generics
+import           Text.PrettyPrint hiding ((<>))
 
 wrapParens :: Bool -> Doc -> Doc
 wrapParens False s = s
@@ -55,8 +55,8 @@ instance (GOutputable f, Constructor c) => GOutputable (M1 C c f) where
     case fixity of
       Prefix -> wrapParens boolParens $ fsep [text name,
                                               if t == Rec
-                                              then braces $ gppr a t 11 boolParens
-                                              else gppr a t 11 boolParens]
+                                              then braces $ nest 1 $ gppr a t 11 boolParens
+                                              else nest 1 $ gppr a t 11 boolParens]
       Infix _ m -> wrapParens (d > m) $ gppr a t (m + 1) (d > m)
     where fixity = conFixity c
           boolParens = d > 10 && not (isNullary a)

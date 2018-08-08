@@ -22,7 +22,6 @@ import           Numeric.Natural                (Natural)
 import           System.Exit                    (ExitCode)
 import           Text.PrettyPrint.HughesPJClass hiding ((<>))
 
-
 viaPretty :: Pretty a => Int -> a -> Doc
 viaPretty _ x = pPrint x
 
