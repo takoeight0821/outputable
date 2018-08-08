@@ -22,7 +22,8 @@ class Outputable a where
   ppr = pprPrec 0
 
   pprList :: [a] -> Doc
-  pprList = brackets . sep . punctuate comma . map ppr
+  pprList =
+    brackets . sep . punctuate comma . map ppr
 
 data Type = Rec | Pref | Inf String
   deriving Eq
@@ -46,7 +47,7 @@ instance (GOutputable f, Datatype c) => GOutputable (M1 D c f) where
 instance (GOutputable f, Selector c) => GOutputable (M1 S c f) where
   gppr s@(M1 a) t d p
     | selector == "" = gppr a t d p
-    | otherwise = text selector <+> char '=' <+> gppr a t 0 p
+    | otherwise = fsep [text selector <+> char '=', gppr a t 0 p]
     where selector = selName s
   isNullary (M1 a) = isNullary a
 
