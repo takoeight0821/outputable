@@ -7,6 +7,7 @@ import           Data.Complex                   (Complex)
 import           Data.Functor.Identity          (Identity)
 import           Data.Int                       (Int16, Int32, Int64, Int8)
 import           Data.List.NonEmpty             (NonEmpty)
+import qualified Data.Map                       as Map
 import           Data.Monoid                    (All, Any, Dual, First, Last,
                                                  Product, Sum)
 import           Data.Outputable.Class
@@ -92,3 +93,6 @@ instance (Outputable a, Outputable b) => Outputable (a, b) where
   pprPrec _ (a, b) = parens $ fsep $ punctuate comma [ppr a, ppr b]
 instance (Outputable a, Outputable b, Outputable c) => Outputable (a, b, c) where
   pprPrec _ (a, b, c) = parens $ fsep $ punctuate comma [ppr a, ppr b, ppr c]
+
+instance (Outputable k, Outputable v) => Outputable (Map.Map k v) where
+  pprPrec _ m = "fromList" <+> ppr (Map.toList m)
