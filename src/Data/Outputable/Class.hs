@@ -47,17 +47,17 @@ instance (GOutputable f, Datatype c) => GOutputable (M1 D c f) where
 instance (GOutputable f, Selector c) => GOutputable (M1 S c f) where
   gppr s@(M1 a) t d p
     | selector == "" = gppr a t d p
-    | otherwise = fsep [text selector <+> char '=', gppr a t 0 p]
+    | otherwise = fsep [text selector <+> char '=', nest 2 $ gppr a t 0 p]
     where selector = selName s
   isNullary (M1 a) = isNullary a
 
 instance (GOutputable f, Constructor c) => GOutputable (M1 C c f) where
   gppr c@(M1 a) _ d _ =
     case fixity of
-      Prefix -> wrapParens boolParens $ fsep [text name,
-                                              if t == Rec
-                                              then braces $ nest 1 $ gppr a t 11 boolParens
-                                              else nest 1 $ gppr a t 11 boolParens]
+      Prefix -> wrapParens boolParens $ text name <+>
+                if t == Rec
+                then nest 1 $ braces $ nest 2 $ gppr a t 11 boolParens
+                else nest 2 $ gppr a t 11 boolParens
       Infix _ m -> wrapParens (d > m) $ gppr a t (m + 1) (d > m)
     where fixity = conFixity c
           boolParens = d > 10 && not (isNullary a)
@@ -83,16 +83,16 @@ instance (GOutputable f, GOutputable g) => GOutputable (f :+: g) where
   isNullary (R1 a) = isNullary a
 
 instance (GOutputable f, GOutputable g) => GOutputable (f :*: g) where
-  gppr (f :*: g) Rec d p = fsep $ punctuate comma [pfn, pgn]
+  gppr (f :*: g) Rec d p = sep $ punctuate comma [pfn, pgn]
     where pfn = gppr f Rec d p
           pgn = gppr g Rec d p
 
   gppr (f :*: g) t@(Inf s) d p =
-    fsep [pfn, text s, pgn]
+    pfn <+> text s <+> pgn
     where pfn = gppr f t d p
           pgn = gppr g t d p
 
   gppr (f :*: g) Pref n p =
-    fsep [gppr f Pref n p, gppr g Pref n p]
+    gppr f Pref n p <+> gppr g Pref n p
 
   isNullary _ = False

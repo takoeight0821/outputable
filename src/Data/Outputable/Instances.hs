@@ -21,10 +21,10 @@ import           Data.Word                      (Word16, Word32, Word64, Word8)
 import           GHC.Generics
 import           Numeric.Natural                (Natural)
 import           System.Exit                    (ExitCode)
-import           Text.PrettyPrint.HughesPJClass hiding ((<>))
+import           Text.PrettyPrint.HughesPJClass
 
 viaPretty :: Pretty a => Int -> a -> Doc
-viaPretty _ x = pPrint x
+viaPretty _ = pPrint
 
 viaPrettyNum :: (Ord a, Num a, Pretty a) => Int -> a -> Doc
 viaPrettyNum n x
