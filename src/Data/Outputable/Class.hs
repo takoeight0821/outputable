@@ -92,7 +92,6 @@ instance (GOutputable f, GOutputable g) => GOutputable (f :*: g) where
     where pfn = gppr f t d p
           pgn = gppr g t d p
 
-  gppr (f :*: g) Pref n p =
-    gppr f Pref n p <+> gppr g Pref n p
+  gppr (f :*: g) Pref n p = sep [gppr f Pref n p, gppr g Pref n p]
 
   isNullary _ = False
