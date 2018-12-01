@@ -3,7 +3,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE KindSignatures    #-}
 {-# LANGUAGE TypeOperators     #-}
-module Data.Outputable.Class (Outputable(..)) where
+module Data.Outputable.Class (Outputable(..), GOutputable(..)) where
 
 import           Data.Char
 import           GHC.Generics
@@ -16,7 +16,7 @@ wrapParens True x  = lparen <> x <> rparen
 class Outputable a where
   pprPrec :: Int -> a -> Doc
   default pprPrec :: (Generic a, GOutputable (Rep a)) => Int -> a -> Doc
-  pprPrec n x = gppr (from x) Pref n False
+  pprPrec n x = gpprPrec Pref False n (from x)
 
   ppr :: a -> Doc
   ppr = pprPrec 0
@@ -29,36 +29,43 @@ data Type = Rec | Pref | Inf String
   deriving Eq
 
 class GOutputable (f :: * -> *) where
-  gppr :: f x -> Type -> Int -> Bool -> Doc
+  gpprPrec :: Type -> Bool -> Int -> f x -> Doc
+
+  gppr :: f x -> Doc
+  gppr = gpprPrec Pref False 0
+
+  gpprList :: [f x] -> Doc
+  gpprList = brackets . sep . punctuate comma . map gppr
+
   isNullary :: f x -> Bool
 
 instance GOutputable V1 where
-  gppr _ _ _ _ = mempty
+  gpprPrec _ _ _ _ = mempty
   isNullary = error "generic outputable (isNullary): unnecessary case"
 
 instance GOutputable U1 where
-  gppr _ _ _ _ = mempty
+  gpprPrec _ _ _ _ = mempty
   isNullary _ = True
 
 instance (GOutputable f, Datatype c) => GOutputable (M1 D c f) where
-  gppr (M1 a) = gppr a
+  gpprPrec t p d (M1 a) = gpprPrec t p d a
   isNullary (M1 a) = isNullary a
 
 instance (GOutputable f, Selector c) => GOutputable (M1 S c f) where
-  gppr s@(M1 a) t d p
-    | selector == "" = gppr a t d p
-    | otherwise = fsep [text selector <+> char '=', nest 2 $ gppr a t 0 p]
+  gpprPrec t p d s@(M1 a)
+    | selector == "" = gpprPrec t p d a
+    | otherwise = fsep [text selector <+> char '=', nest 2 $ gpprPrec t p 0 a]
     where selector = selName s
   isNullary (M1 a) = isNullary a
 
 instance (GOutputable f, Constructor c) => GOutputable (M1 C c f) where
-  gppr c@(M1 a) _ d _ =
+  gpprPrec _ _ d c@(M1 a) =
     case fixity of
       Prefix -> wrapParens boolParens $ text name <+>
                 if t == Rec
-                then nest 1 $ braces $ nest 2 $ gppr a t 11 boolParens
-                else nest 2 $ gppr a t 11 boolParens
-      Infix _ m -> wrapParens (d > m) $ gppr a t (m + 1) (d > m)
+                then nest 1 $ braces $ nest 2 $ gpprPrec t boolParens 11 a
+                else nest 2 $ gpprPrec t boolParens 11 a
+      Infix _ m -> wrapParens (d > m) $ gpprPrec t (d > m) (m + 1) a
     where fixity = conFixity c
           boolParens = d > 10 && not (isNullary a)
           t | conIsRecord c = Rec
@@ -73,25 +80,25 @@ instance (GOutputable f, Constructor c) => GOutputable (M1 C c f) where
   isNullary (M1 a) = isNullary a
 
 instance (Outputable f) => GOutputable (K1 t f) where
-  gppr (K1 a) _ d _ = pprPrec d a
+  gpprPrec _ _ d (K1 a) = pprPrec d a
   isNullary _ = False
 
 instance (GOutputable f, GOutputable g) => GOutputable (f :+: g) where
-  gppr (L1 a) t d p = gppr a t d p
-  gppr (R1 a) t d p = gppr a t d p
+  gpprPrec t p d (L1 a) = gpprPrec t p d a
+  gpprPrec t p d (R1 a) = gpprPrec t p d a
   isNullary (L1 a) = isNullary a
   isNullary (R1 a) = isNullary a
 
 instance (GOutputable f, GOutputable g) => GOutputable (f :*: g) where
-  gppr (f :*: g) Rec d p = sep $ punctuate comma [pfn, pgn]
-    where pfn = gppr f Rec d p
-          pgn = gppr g Rec d p
+  gpprPrec Rec p d (f :*: g) = sep $ punctuate comma [pfn, pgn]
+    where pfn = gpprPrec Rec p d f
+          pgn = gpprPrec Rec p d g
 
-  gppr (f :*: g) t@(Inf s) d p =
+  gpprPrec t@(Inf s) p d (f :*: g) =
     pfn <+> text s <+> pgn
-    where pfn = gppr f t d p
-          pgn = gppr g t d p
+    where pfn = gpprPrec t p d f
+          pgn = gpprPrec t p d g
 
-  gppr (f :*: g) Pref n p = sep [gppr f Pref n p, gppr g Pref n p]
+  gpprPrec Pref p d (f :*: g) = sep [gpprPrec Pref p d f, gpprPrec Pref p d g]
 
   isNullary _ = False
