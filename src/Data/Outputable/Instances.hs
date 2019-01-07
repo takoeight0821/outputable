@@ -95,6 +95,8 @@ instance (Outputable a, Outputable b, Outputable c) => Outputable (a, b, c) wher
   pprPrec _ (a, b, c) = parens $ fsep $ punctuate comma [ppr a, ppr b, ppr c]
 instance (Outputable a, Outputable b, Outputable c, Outputable d) => Outputable (a, b, c, d) where
   pprPrec _ (a, b, c, d) = parens $ fsep $ punctuate comma [ppr a, ppr b, ppr c, ppr d]
+instance (Outputable a, Outputable b, Outputable c, Outputable d, Outputable e) => Outputable (a, b, c, d, e) where
+  pprPrec _ (a, b, c, d, e) = parens $ fsep $ punctuate comma [ppr a, ppr b, ppr c, ppr d, ppr e]
 
 instance (Outputable k, Outputable v) => Outputable (Map.Map k v) where
   pprPrec _ m = "fromList" <+> ppr (Map.toList m)
